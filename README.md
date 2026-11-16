@@ -32,15 +32,16 @@ just check       # ruff check, ruff format --check, ty check, pytest
 
 ## Sandbox workflow
 
-The repository is mounted into an OpenShell sandbox at `/sandbox/repo`, where the `planner`
-OpenCode agent runs. Configuration (image, policy, provider profiles) lives in
+The repository is uploaded one-way into an OpenShell sandbox at `/sandbox/repo`, where the
+`planner` OpenCode agent runs. Changes flow back to the host through a pull request, not a bind
+mount. Configuration (image, policy, provider profiles) lives in
 [openpy-agent-sandbox](https://github.com/atorizva/openpy-agent-sandbox), cloned at a pinned tag
 into gitignored `.openshell/`.
 
 ```bash
 just setup-openshell   # clone pinned sandbox config into .openshell/
-just sandbox-start     # start a detached sandbox bound to this repo
-just sandbox-opencode  # open OpenCode (interactive) inside the sandbox
+just sandbox-start     # seed this repo into a sandbox and open OpenCode
+just sandbox-opencode  # re-open OpenCode (interactive) inside the sandbox
 just sandbox-connect   # attach to the sandbox shell
 just sandbox-delete    # tear the sandbox down
 ```
