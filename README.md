@@ -10,6 +10,8 @@ worktrees) → verify (quality gate) → commit/PR.
 - `just` (task runner)
 - Optional, for the sandbox workflow: `openshell` CLI + Docker, plus the companion
   [openpy-agent-sandbox](https://github.com/atorizva/openpy-agent-sandbox) repo.
+- Optional, to watch the sandbox agent in a Herdr panel:
+  [herdr-openshell](https://github.com/atorizva/herdr-openshell-integration).
 
 ## Getting started
 
@@ -40,11 +42,20 @@ into gitignored `.openshell/`.
 
 ```bash
 just setup-openshell   # clone pinned sandbox config into .openshell/
-just sandbox-start     # seed this repo into a sandbox and open OpenCode
-just sandbox-opencode  # re-open OpenCode (interactive) inside the sandbox
-just sandbox-connect   # attach to the sandbox shell
+just sandbox-start     # create the sandbox with OpenCode as its main process
+just sandbox-opencode  # attach to the already-running OpenCode agent
+just sandbox-connect   # attach to the sandbox (same agent; no second instance)
 just sandbox-delete    # tear the sandbox down
 ```
+
+OpenCode is created as the sandbox's **main process**, not as a transient `sandbox exec`. With the
+optional [herdr-openshell](https://github.com/atorizva/herdr-openshell-integration) plugin
+installed, that process is mirrored into your Herdr panel, so you can watch and guide the agent
+there instead of in the foreground terminal that started it. Without the plugin you still get the
+plain attached terminal; nothing else changes.
+
+Attaching a second time (`sandbox-opencode`, `sandbox-connect`) reuses that running process, so you
+never end up with two agents in the same sandbox.
 
 The image is pinned by digest (`OPENSHELL_IMAGE`, default `:latest` until the first GHCR publish;
 then set `OPENSHELL_IMAGE=ghcr.io/atorizva/openpy-agent-sandbox@sha256:<digest>`).
