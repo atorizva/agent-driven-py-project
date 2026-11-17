@@ -2,7 +2,7 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
 # --- OpenShell sandbox integration ---
 OPENSHELL_REPO := "git@github.com:atorizva/openpy-agent-sandbox.git"
-OPENSHELL_REF := env_var_or_default("OPENSHELL_REF", "v0.1.0")
+OPENSHELL_REF := env_var_or_default("OPENSHELL_REF", "v1.0.0")
 # Pin to @sha256:<digest> after the first GHCR publish.
 OPENSHELL_IMAGE := env_var_or_default("OPENSHELL_IMAGE", "ghcr.io/atorizva/openpy-agent-sandbox:latest")
 
