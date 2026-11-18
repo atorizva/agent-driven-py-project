@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# Append OpenCode as co-author and record the active model on every commit.
+set -eu
+
+COMMIT_MSG_FILE="$1"
+CO_AUTHOR="Co-authored-by: opencode-agent[bot] <opencode-agent[bot]@users.noreply.github.com>"
+
+# Active model, resolved from the live OpenCode session when we run under it.
+MODEL_LINE=""
+if [ -n "${OPENCODE_SESSION_ID:-}" ] && command -v opencode >/dev/null 2>&1; then
+  MODEL_LINE=$(opencode api get "/api/session/$OPENCODE_SESSION_ID" 2>/dev/null \
+    | sed -n 's/.*"model":{"id":"\([^"]*\)","providerID":"\([^"]*\)".*/\2\/\1/p' \
+    | sed 's/^/Model: /' | head -1)
+fi
+
+# Idempotent: never duplicate on --amend or re-runs.
+if grep -qF "$CO_AUTHOR" "$COMMIT_MSG_FILE"; then
+  exit 0
+fi
+
+{
+  printf '\n'
+  [ -n "$MODEL_LINE" ] && printf '%s\n' "$MODEL_LINE"
+  printf '%s\n' "$CO_AUTHOR"
+} >> "$COMMIT_MSG_FILE"
