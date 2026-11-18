@@ -32,6 +32,12 @@ test:
 # Full quality gate
 check: lint format-check typecheck test
 
+# --- Git hooks ---
+
+# Enable the versioned hooks in .githooks/ (run once per clone).
+hooks:
+    git config core.hooksPath .githooks
+
 # --- Sandbox integration ---
 
 # Clone the pinned sandbox config repo into gitignored .openshell/

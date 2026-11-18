@@ -20,6 +20,15 @@ uv sync          # install CPython 3.15 + dev dependencies
 just check       # ruff check, ruff format --check, ty check, pytest
 ```
 
+## Git hooks
+
+`.githooks/prepare-commit-msg` appends the OpenCode co-author + model trailer to every commit.
+Enable it once per clone:
+
+```bash
+just hooks       # git config core.hooksPath .githooks
+```
+
 ## Quality gate
 
 | Recipe | Command |
@@ -66,6 +75,7 @@ then set `OPENSHELL_IMAGE=ghcr.io/atorizva/openpy-agent-sandbox@sha256:<digest>`
 src/agent_driven_py_project/   package
 tests/                         tests
 .opencode/                     OpenCode config + planner/worker agents
+.githooks/                     versioned git hooks (enable with `just hooks`)
 docs/agents/                   agent working docs (issue tracker, triage, domain)
 docs/adr/                      architecture decision records
 prek.toml                      pre-commit hooks
