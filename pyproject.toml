@@ -1,7 +1,7 @@
 [project]
 name = "agent-driven-py-project"
 version = "0.1.0"
-description = "Agent-driven Python project developed by an OpenCode agent inside an OpenShell sandbox"
+description = "Agent-driven Python project developed by an OpenCode agent inside a Docker Sandbox (SBX)"
 readme = "README.md"
 requires-python = ">=3.15"
 dependencies = []

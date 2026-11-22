@@ -1,10 +1,8 @@
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
-# --- OpenShell sandbox integration ---
-OPENSHELL_REPO := "git@github.com:atorizva/openpy-agent-sandbox.git"
-OPENSHELL_REF := env_var_or_default("OPENSHELL_REF", "v1.0.0")
-# Pin to @sha256:<digest> after the first GHCR publish.
-OPENSHELL_IMAGE := env_var_or_default("OPENSHELL_IMAGE", "ghcr.io/atorizva/openpy-agent-sandbox:latest")
+# --- Docker Sandbox (SBX) integration ---
+SBX_IMAGE := env_var_or_default("SBX_IMAGE", "ghcr.io/atorizva/opencode-sbx-sandbox:v1.1.0")
+SBX_NAME := env_var_or_default("SBX_NAME", "agent-driven-py-project")
 
 default:
     @just --list
@@ -40,18 +38,11 @@ hooks:
 
 # --- Sandbox integration ---
 
-# Clone the pinned sandbox config repo into gitignored .openshell/
-setup-openshell:
-    @test -d .openshell || git clone --depth 1 --branch {{OPENSHELL_REF}} {{OPENSHELL_REPO}} .openshell
+# Create the sandbox from the image, or re-attach if it already exists.
+# Clone mode: host repo mounted read-only, agent works on a private in-container clone.
+sandbox-run:
+    sbx run "{{SBX_IMAGE}}" --clone . --name "{{SBX_NAME}}"
 
-sandbox-start: setup-openshell
-    OPENSHELL_IMAGE="{{OPENSHELL_IMAGE}}" just -f .openshell/Justfile start "$(pwd)"
-
-sandbox-opencode: setup-openshell
-    just -f .openshell/Justfile opencode
-
-sandbox-connect: setup-openshell
-    just -f .openshell/Justfile connect
-
-sandbox-delete: setup-openshell
-    just -f .openshell/Justfile delete
+# Tear the sandbox down.
+sandbox-delete:
+    sbx rm "{{SBX_NAME}}"

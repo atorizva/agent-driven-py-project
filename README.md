@@ -1,6 +1,6 @@
 # agent-driven-py-project
 
-A Python project developed by an OpenCode agent running inside an NVIDIA OpenShell sandbox. The
+A Python project developed by an OpenCode agent running inside a Docker Sandbox (SBX). The
 agent works through a full learning loop: plan (planner) → implement (worker subagents in Git
 worktrees) → verify (quality gate) → commit/PR.
 
@@ -8,10 +8,9 @@ worktrees) → verify (quality gate) → commit/PR.
 
 - [uv](https://docs.astral.sh/uv/) 0.13.8+ (manages CPython 3.15, dependencies, lockfile)
 - `just` (task runner)
-- Optional, for the sandbox workflow: `openshell` CLI + Docker, plus the companion
-  [openpy-agent-sandbox](https://github.com/atorizva/openpy-agent-sandbox) repo.
-- Optional, to watch the sandbox agent in a Herdr panel:
-  [herdr-openshell](https://github.com/atorizva/herdr-openshell-integration).
+- Optional, for the sandbox workflow: `sbx` CLI (Docker Sandboxes, signed in) + Docker,
+  `/dev/kvm` access, and a host SSH agent. See the companion
+  [opencode-sbx-sandbox](https://github.com/atorizva/opencode-sbx-sandbox) repo.
 
 ## Getting started
 
@@ -43,31 +42,24 @@ just hooks       # git config core.hooksPath .githooks
 
 ## Sandbox workflow
 
-The repository is uploaded one-way into an OpenShell sandbox at `/sandbox/repo`, where the
-`planner` OpenCode agent runs. Changes flow back to the host through a pull request, not a bind
-mount. Configuration (image, policy, provider profiles) lives in
-[openpy-agent-sandbox](https://github.com/atorizva/openpy-agent-sandbox), cloned at a pinned tag
-into gitignored `.openshell/`.
+The `planner` OpenCode agent runs inside a Docker Sandbox built from the companion
+[opencode-sbx-sandbox](https://github.com/atorizva/opencode-sbx-sandbox) image. Sandboxes run in
+`--clone` mode: the host repo is mounted **read-only** and the agent works on a private in-container
+clone, so nothing it does can mutate your working tree. Changes flow back to the host as a pull request.
 
 ```bash
-just setup-openshell   # clone pinned sandbox config into .openshell/
-just sandbox-start     # create the sandbox with OpenCode as its main process
-just sandbox-opencode  # attach to the already-running OpenCode agent
-just sandbox-connect   # attach to the sandbox (same agent; no second instance)
-just sandbox-delete    # tear the sandbox down
+just sandbox-run     # create the sandbox, or re-attach if it already exists
+just sandbox-delete  # tear the sandbox down
 ```
 
-OpenCode is created as the sandbox's **main process**, not as a transient `sandbox exec`. With the
-optional [herdr-openshell](https://github.com/atorizva/herdr-openshell-integration) plugin
-installed, that process is mirrored into your Herdr panel, so you can watch and guide the agent
-there instead of in the foreground terminal that started it. Without the plugin you still get the
-plain attached terminal; nothing else changes.
+`sandbox-run` is create-or-reattach — the first invocation builds the sandbox, later ones re-attach
+to the same agent (never a second instance). The image is pinned to a version tag
+(`SBX_IMAGE=ghcr.io/atorizva/opencode-sbx-sandbox:v1.1.0`) and the sandbox name is fixed
+(`SBX_NAME=agent-driven-py-project`); both are overridable via env vars.
 
-Attaching a second time (`sandbox-opencode`, `sandbox-connect`) reuses that running process, so you
-never end up with two agents in the same sandbox.
-
-The image is pinned by digest (`OPENSHELL_IMAGE`, default `:latest` until the first GHCR publish;
-then set `OPENSHELL_IMAGE=ghcr.io/atorizva/openpy-agent-sandbox@sha256:<digest>`).
+Credentials (OpenCode API key, optional GitHub token) are stored once on the host with `sbx secret`
+and proxied into the sandbox — never written to the repo or the sandbox filesystem. One-time host
+setup (KVM, SSH agent, `sbx` sign-in) is covered by `just doctor` in the sandbox repo.
 
 ## Structure
 

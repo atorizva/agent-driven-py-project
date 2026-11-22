@@ -1,6 +1,3 @@
-# OpenShell sandbox config (cloned, pinned)
-.openshell/
-
 # Git worktrees
 .worktrees/
 
